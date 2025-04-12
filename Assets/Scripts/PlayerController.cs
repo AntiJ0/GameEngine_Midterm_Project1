@@ -31,10 +31,10 @@ public class PlayerController : MonoBehaviour
         {
             collision.GetComponent<LevelObject>().MoveToNextLevel();
         }
-    
-        if (collision.CompareTag("Finish"))
+
+        if (collision.CompareTag("Game Over"))
         {
-            collision.GetComponent<LevelObject>().MoveToNextLevel();
+            SceneManager.LoadScene("GameOver");
         }
     }
 
