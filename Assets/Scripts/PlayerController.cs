@@ -14,6 +14,12 @@ public class PlayerController : MonoBehaviour
     private Animator pAni;
     private bool isGrounded;
 
+    public bool isInvincible = false;
+    private bool isTouchingTrap = false;
+
+    private SpriteRenderer spriteRenderer;
+    private Coroutine invincibilityRoutine;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -34,17 +40,88 @@ public class PlayerController : MonoBehaviour
 
         if (collision.CompareTag("Game Over"))
         {
-            SceneManager.LoadScene("GameOver");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+        }
+
+        if (collision.CompareTag("Invincibility Item"))
+        {
+            ActivateInvincibility(5f);
+            Destroy(collision.gameObject);
         }
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        
+        if (collision.gameObject.CompareTag("Trap"))
+        {
+            isTouchingTrap = true;
+
+            if (!isInvincible)
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+            }
+        }
     }
 
-    // Update is called once per frame
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Trap"))
+        {
+            isTouchingTrap = false;
+        }
+    }
+
+    public void ActivateInvincibility(float duration)
+    {
+        if (invincibilityRoutine != null)
+            StopCoroutine(invincibilityRoutine);
+
+        invincibilityRoutine = StartCoroutine(InvincibilityCoroutine(duration));
+    }
+
+    private IEnumerator InvincibilityCoroutine(float duration)
+    {
+        isInvincible = true;
+
+        // 1단계: 처음엔 반투명 상태 유지
+        Color originalColor = spriteRenderer.color;
+        Color transparentColor = new Color(originalColor.r, originalColor.g, originalColor.b, 0.5f);
+        spriteRenderer.color = transparentColor;
+
+        float warningTime = 2f; // 깜빡이기 시작할 시점 (마지막 2초)
+        float blinkStartTime = Time.time + (duration - warningTime);
+
+        while (Time.time < blinkStartTime)
+        {
+            yield return null;
+        }
+
+        // 2단계: 마지막 2초 동안 깜빡임 (점점 빨라지게)
+        float blinkDuration = duration - (Time.time - (blinkStartTime - (duration - warningTime)));
+        float endTime = Time.time + blinkDuration;
+        float blinkSpeed = 0.2f;
+
+        while (Time.time < endTime)
+        {
+            spriteRenderer.color = originalColor;
+            yield return new WaitForSeconds(blinkSpeed);
+
+            spriteRenderer.color = transparentColor;
+            yield return new WaitForSeconds(blinkSpeed);
+
+            blinkSpeed *= 0.85f; // 점점 빨라짐
+        }
+
+        // 3단계: 무적 끝나고 원래 상태 복구
+        spriteRenderer.color = originalColor;
+        isInvincible = false;
+    }
+
+    void Start()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
     void Update()
     {
         float moveInput = Input.GetAxisRaw("Horizontal");
@@ -63,6 +140,12 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             pAni.SetTrigger("JumpAction");
             pAni.SetTrigger("FallAction");
+        }
+
+        // 무적이 꺼졌는데 현재 함정과 닿아있다면 게임오버
+        if (!isInvincible && isTouchingTrap)
+        {
+            SceneManager.LoadScene("GameOver");
         }
     }
 }
