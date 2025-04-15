@@ -134,11 +134,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  jumpForce: 12
+  jumpForce: 14
   groundCheck: {fileID: 1982779446237210151}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  isInvincible: 0
 --- !u!50 &3820813542591077713
 Rigidbody2D:
   serializedVersion: 4

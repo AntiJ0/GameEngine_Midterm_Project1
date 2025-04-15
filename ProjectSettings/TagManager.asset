@@ -7,6 +7,10 @@ TagManager:
   - Game Over
   - Trap
   - Invincibility Item
+  - Boundary
+  - Enemy
+  - Obstacle
+  - Speed Boost Item
   layers:
   - Default
   - TransparentFX
@@ -14,9 +18,9 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
-  - 
-  - 
+  - GroundCheck
+  - WallCheck
+  - Obstacle
   - 
   - 
   - 

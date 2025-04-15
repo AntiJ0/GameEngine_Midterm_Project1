@@ -40,7 +40,12 @@ public class PlayerController : MonoBehaviour
 
         if (collision.CompareTag("Game Over"))
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+            SceneManager.LoadScene("GameOver");
+        }
+
+        if (collision.CompareTag("Enemy"))
+        {
+            SceneManager.LoadScene("GameOver");
         }
 
         if (collision.CompareTag("Invincibility Item"))
