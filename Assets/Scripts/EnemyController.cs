@@ -8,13 +8,14 @@ public class EnemyController : MonoBehaviour
 
     private Rigidbody2D rb;
     private bool isMovingRight = true;
+    private SpriteRenderer spriteRenderer;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    // Update is called once per frame
     private void Update()
     {
         if (isMovingRight)
@@ -25,9 +26,12 @@ public class EnemyController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Boundary"))
+        if (collision.CompareTag("Boundary") || collision.CompareTag("Enemy"))
         {
             isMovingRight = !isMovingRight;
+
+            // ✅ 방향 전환 시 flipX 반전
+            spriteRenderer.flipX = !spriteRenderer.flipX;
         }
     }
 }

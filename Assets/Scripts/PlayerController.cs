@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
+    private float originalSpeed;
     public float jumpForce = 5f;
     public Transform groundCheck;
     public LayerMask groundLayer;
@@ -19,6 +20,7 @@ public class PlayerController : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
     private Coroutine invincibilityRoutine;
+    private Coroutine speedBoostRoutine;
 
     private void Awake()
     {
@@ -53,6 +55,12 @@ public class PlayerController : MonoBehaviour
             ActivateInvincibility(5f);
             Destroy(collision.gameObject);
         }
+
+        if (collision.CompareTag("Speed Boost Item"))
+        {
+            BoostSpeed(1.5f, 10f);
+            Destroy(collision.gameObject);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -65,6 +73,11 @@ public class PlayerController : MonoBehaviour
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
             }
+        }
+
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            SceneManager.LoadScene("GameOver");
         }
     }
 
@@ -122,8 +135,25 @@ public class PlayerController : MonoBehaviour
         isInvincible = false;
     }
 
+    public void BoostSpeed(float multiplier, float duration)
+    {
+        if (speedBoostRoutine != null)
+            StopCoroutine(speedBoostRoutine);
+
+        speedBoostRoutine = StartCoroutine(SpeedBoostCoroutine(multiplier, duration));
+    }
+
+    private IEnumerator SpeedBoostCoroutine(float multiplier, float duration)
+    {
+        moveSpeed *= multiplier;
+        yield return new WaitForSeconds(duration);
+        moveSpeed = originalSpeed;
+    }
+
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
+        originalSpeed = moveSpeed;
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
