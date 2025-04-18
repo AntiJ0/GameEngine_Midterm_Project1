@@ -19,7 +19,7 @@ public class EnemyAI : MonoBehaviour
     public LayerMask groundLayer;
 
     [Header("Front Obstacle Detection")]
-    public Transform frontCheck; // 앞 방향 레이 쏠 위치
+    public Transform frontCheck;
 
     void Start()
     {
@@ -46,7 +46,6 @@ public class EnemyAI : MonoBehaviour
         Vector2 direction = (player.position - transform.position).normalized;
         rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
 
-        // 앞에 ground 감지되면 점프
         RaycastHit2D hit = Physics2D.Raycast(frontCheck.position, new Vector2(direction.x, 0), 0.5f, groundLayer);
 
         if (hit.collider != null && isGrounded)
@@ -54,7 +53,6 @@ public class EnemyAI : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
 
-        // 방향 반전 (현재 스케일 유지하면서 x만 뒤집기)
         Vector3 scale = transform.localScale;
         scale.x = direction.x > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
         transform.localScale = scale;

@@ -11,6 +11,9 @@ TagManager:
   - Enemy
   - Obstacle
   - Speed Boost Item
+  - Jump Boost Item
+  - EnemyCage
+  - CageTrigger
   layers:
   - Default
   - TransparentFX
@@ -18,7 +21,7 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
+  - Enemy
   - 
   - 
   - 
