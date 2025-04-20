@@ -1,35 +1,30 @@
 using UnityEngine;
+using System.Collections; // 🔧 이게 없으면 IEnumerator 못 씀!
 
 public class VisionExpander : MonoBehaviour
 {
-    public Transform visionMask;
-    public float expandSpeed = 1.5f;
-    public float maxScale = 100f;  // 넉넉하게 설정
-
-    private bool expanding = false;
-
-    void Start()
-    {
-        if (visionMask != null)
-            visionMask.localScale = new Vector3(56.62498f, 56.62498f, 1f);
-    }
-
-    void Update()
-    {
-        if (visionMask != null)
-        {
-            if (expanding)
-            {
-                float current = visionMask.localScale.x;
-                float newScale = Mathf.Min(current + expandSpeed * Time.deltaTime, maxScale);
-                visionMask.localScale = new Vector3(newScale, newScale, 1f);
-            }
-        }
-    }
+    public Transform maskTransform; // SpriteMask 오브젝트의 Transform
+    public Vector3 targetScale = new Vector3(10f, 10f, 1f); // 목표 크기
+    public float expandDuration = 2f; // 확장 시간
 
     public void StartExpandingVision()
     {
-        if (expanding) return; // 이미 확장 중이면 무시
-        expanding = true;
+        StartCoroutine(ExpandMask());
+    }
+
+    private IEnumerator ExpandMask()
+    {
+        Vector3 initialScale = maskTransform.localScale;
+        float elapsed = 0f;
+
+        while (elapsed < expandDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / expandDuration;
+            maskTransform.localScale = Vector3.Lerp(initialScale, targetScale, t);
+            yield return null;
+        }
+
+        maskTransform.localScale = targetScale;
     }
 }

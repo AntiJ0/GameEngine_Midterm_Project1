@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    [HideInInspector]
+    public bool canMove = true;
+
     public float moveSpeed = 5f;
     private float originalSpeed;
     public float jumpForce = 5f;
@@ -30,6 +33,13 @@ public class PlayerController : MonoBehaviour
     private Coroutine speedBoostRoutine;
     private Coroutine jumpBoostRoutine;
 
+    // ▼ 추가된 부분 (투사체 관련)
+    public GameObject projectilePrefab;
+    public Transform firePoint;
+    public float fireCooldown = 0.5f;
+    private bool canAttack = false;
+    private float lastFireTime;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -42,7 +52,7 @@ public class PlayerController : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
-    
+
         if (collision.CompareTag("Finish"))
         {
             collision.GetComponent<LevelObject>().MoveToNextLevel();
@@ -69,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
         if (collision.CompareTag("Speed Boost Item"))
         {
-            BoostSpeed(1.4f, 10f);
+            BoostSpeed(1.5f, 10f);
             Destroy(collision.gameObject);
         }
 
@@ -88,6 +98,16 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (collision.CompareTag("Boss"))
+        {
+            SceneManager.LoadScene("GameOver");
+        }
+
+        if (collision.CompareTag("Attack Item")) // ⭐ 공격 아이템 처리 추가
+        {
+            canAttack = true;
+            Destroy(collision.gameObject);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -166,7 +186,7 @@ public class PlayerController : MonoBehaviour
         if (speedBoostRoutine != null)
         {
             StopCoroutine(speedBoostRoutine);
-            moveSpeed = originalSpeed; // 값 초기화
+            moveSpeed = originalSpeed;
         }
 
         speedBoostRoutine = StartCoroutine(SpeedBoostCoroutine(multiplier, duration));
@@ -210,7 +230,7 @@ public class PlayerController : MonoBehaviour
         if (jumpBoostRoutine != null)
         {
             StopCoroutine(jumpBoostRoutine);
-            jumpForce = originalJumpForce; // 점프력 초기화
+            jumpForce = originalJumpForce;
         }
 
         jumpBoostRoutine = StartCoroutine(JumpBoostCoroutine(multiplier, duration));
@@ -263,18 +283,17 @@ public class PlayerController : MonoBehaviour
 
         float alpha = isInvincibleActive ? 0.5f : 1f;
 
-        // 색상 조합
         float r = 0f, g = 0f, b = 0f;
         int count = 0;
 
         if (isSpeedBoostActive)
         {
-            r += 0.5f; g += 1f; b += 0.5f; count++; // 연두색
+            r += 0.5f; g += 1f; b += 0.5f; count++;
         }
 
         if (isJumpBoostActive)
         {
-            r += 0.5f; g += 0.85f; b += 1f; count++; // 하늘색
+            r += 0.5f; g += 0.85f; b += 1f; count++;
         }
 
         if (count > 0)
@@ -290,6 +309,8 @@ public class PlayerController : MonoBehaviour
         spriteRenderer.color = finalColor;
     }
 
+    public void EnableAttack() => canAttack = true;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -301,6 +322,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (!canMove)
+        {
+            rb.velocity = Vector2.zero; // ✅ 이동 완전 정지
+            return;
+        }
+
         float moveInput = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
 
@@ -319,10 +346,15 @@ public class PlayerController : MonoBehaviour
             pAni.SetTrigger("FallAction");
         }
 
-        // 무적이 꺼졌는데 현재 함정과 닿아있다면 게임오버
         if (!isInvincible && isTouchingTrap)
         {
             SceneManager.LoadScene("GameOver");
+        }
+
+        if (canAttack && Input.GetMouseButtonDown(0) && Time.time >= lastFireTime + fireCooldown)
+        {
+            Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+            lastFireTime = Time.time;
         }
     }
 }
