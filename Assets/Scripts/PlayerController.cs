@@ -40,10 +40,14 @@ public class PlayerController : MonoBehaviour
     private bool canAttack = false;
     private float lastFireTime;
 
+    float score;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         pAni = GetComponent<Animator>();
+
+        score = 100f;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -55,6 +59,7 @@ public class PlayerController : MonoBehaviour
 
         if (collision.CompareTag("Finish"))
         {
+            HighScore.TrySet(SceneManager.GetActiveScene().buildIndex, (int)score);
             collision.GetComponent<LevelObject>().MoveToNextLevel();
         }
 
@@ -356,5 +361,7 @@ public class PlayerController : MonoBehaviour
             Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
             lastFireTime = Time.time;
         }
+
+        score -= Time.deltaTime;
     }
 }
